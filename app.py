@@ -2,7 +2,7 @@ import os
 import re
 import json
 import requests
-from flask import Flask, request, Response
+from flask import Flask, request, Response, render_template
 from dotenv import load_dotenv
 from openai import OpenAI
 from xml.sax.saxutils import escape
@@ -143,6 +143,19 @@ def split_sms(text: str, max_len: int = 1600) -> list[str]:
 
 # ------------ API ROUTES ------------
 
+@app.route("/", methods=["GET"])
+def index():
+    """Render landing page."""
+    return render_template("index.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
 @app.route("/sms", methods=["POST"])
 def handle_sms():
     """Main route to handle incoming SMS and return directions or help text."""
@@ -155,7 +168,8 @@ def handle_sms():
             "1. 'WALK from [A] to [B]'\n"
             "2. 'TRANSIT from [A] to [B]'\n"
             "3. 'DRIVE from [A] to [B]'\n"
-            "4. For more info, visit {link}"
+            "4. Tip: the more specific, the better."
+            "5. For more info, visit {link}"
         )
     elif command in {"WALK", "TRANSIT", "DRIVE"}:
         try:
@@ -184,3 +198,14 @@ def handle_sms():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
+#### TO DO
+"""
+TWILIO CAMPAIGN,
+TRANSIT BUS/TRAIN NUMBERS 
+QUALITY OF LIFE CHANGES TO MINIMIZE DIRECTIONS
+&amp; AND SIMILAR CHARACTERS
+"""
