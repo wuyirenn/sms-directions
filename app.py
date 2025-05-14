@@ -166,18 +166,19 @@ def handle_sms():
 
     if command == "HELP":
         message = (
+            "SMS Directions:\n"
             "Commands:\n"
             "1. 'WALK from [A] to [B]'\n"
             "2. 'TRANSIT from [A] to [B]'\n"
             "3. 'DRIVE from [A] to [B]'\n"
-            "4. Tip: the more specific, the better."
-            "5. For more info, visit {link}"
+            "4. For more info, visit sms-directions-production.up.railway.app."
         )
     elif command in {"WALK", "TRANSIT", "DRIVE"}:
         try:
             route = extract_route(user_input)
             duration, steps = get_directions_steps(route["origin"], route["destination"], mode)
             message = (
+                "SMS Directions:\n"
                 f"From: {route['origin']}\n"
                 f"To: {route['destination']}\n"
                 f"Mode: {command}\n"
@@ -187,7 +188,7 @@ def handle_sms():
         except (ValueError, KeyError) as e:
             message = f"Error: {str(e)}"
     else:
-        message = "Unrecognized command. Type 'HELP' for more info."
+        message = "SMS Directions:\nUnrecognized command. Type 'HELP' for instructions."
 
     chunks = split_sms(message)
     xml_messages = "".join(f"<Message>{escape(chunk)}</Message>" for chunk in chunks)
@@ -206,9 +207,7 @@ if __name__ == "__main__":
 
 
 #### TO DO
-"""
-TWILIO CAMPAIGN,
-TRANSIT BUS/TRAIN NUMBERS 
-QUALITY OF LIFE CHANGES TO MINIMIZE DIRECTIONS
-&amp; AND SIMILAR CHARACTERS
-"""
+# TWILIO CAMPAIGN,
+# TRANSIT BUS/TRAIN NUMBERS 
+# QUALITY OF LIFE CHANGES TO MINIMIZE DIRECTIONS
+# &amp; AND SIMILAR CHARACTERS
