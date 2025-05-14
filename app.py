@@ -150,10 +150,12 @@ def index():
 
 @app.route("/privacy")
 def privacy():
+    """Render privacy policy."""
     return render_template("privacy.html")
 
 @app.route("/terms")
 def terms():
+    """Render terms of service."""
     return render_template("terms.html")
 
 @app.route("/sms", methods=["POST"])
