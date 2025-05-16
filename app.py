@@ -9,7 +9,6 @@ from xml.sax.saxutils import escape
 
 
 # ------------ APP AND CLIENT ------------
-
 load_dotenv()
 
 app = Flask(__name__)
@@ -18,7 +17,6 @@ GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 
 # ------------ PARSE COMMAND ------------
-
 def get_command_type(message: str) -> tuple[str, str]:
     """Returns (internal label, Google API mode)."""
     msg = message.strip().lower()
@@ -34,7 +32,6 @@ def get_command_type(message: str) -> tuple[str, str]:
 
 
 # ------------ EXTRACT PLACES ------------
-
 def extract_route(message: str) -> dict:
     """Uses GPT to extract and normalize the origin and destination from free-form text."""
     prompt = f"""
@@ -90,7 +87,6 @@ def resolve_place(query: str, lat=None, lng=None) -> dict:
 
 
 # ------------ GET DIRECTIONS ------------
-
 def get_directions_steps(origin_name: str, destination_name: str, mode: str) -> tuple[str, str]:
     """Get directions between origin and destination using Directions API"""
     origin = resolve_place(origin_name)
@@ -138,7 +134,6 @@ def get_directions_steps(origin_name: str, destination_name: str, mode: str) -> 
 
 
 # ------------ CHUNK SMS ------------
-
 def split_sms(text: str, max_len: int = 1600) -> list[str]:
     """Splits text into chunks that fit in individual SMS messages."""
     parts = []
@@ -153,7 +148,6 @@ def split_sms(text: str, max_len: int = 1600) -> list[str]:
 
 
 # ------------ API ROUTES ------------
-
 @app.route("/", methods=["GET"])
 def index():
     """Render landing page."""
@@ -177,7 +171,6 @@ def handle_sms():
 
     if command == "HELP":
         message = (
-            "SMS Directions:\n"
             "Commands:\n"
             "1. 'WALK from [A] to [B]'\n"
             "2. 'TRANSIT from [A] to [B]'\n"
@@ -189,7 +182,6 @@ def handle_sms():
             route = extract_route(user_input)
             duration, steps = get_directions_steps(route["origin"], route["destination"], mode)
             message = (
-                "SMS Directions:\n"
                 f"From: {route['origin']}\n"
                 f"To: {route['destination']}\n"
                 f"Mode: {command}\n"
@@ -199,7 +191,7 @@ def handle_sms():
         except (ValueError, KeyError) as e:
             message = f"Error: {str(e)}"
     else:
-        message = "SMS Directions:\nUnrecognized command. Type 'HELP' for instructions."
+        message = "Unrecognized command. Type 'HELP' for instructions."
 
     chunks = split_sms(message)
     xml_messages = "".join(f"<Message>{chunk}</Message>" for chunk in chunks)
@@ -209,16 +201,6 @@ def handle_sms():
 
 
 # ------------ RUN APP ------------
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-#### TO DO
-# TWILIO CAMPAIGN,
-# TRANSIT BUS/TRAIN NUMBERS 
-# QUALITY OF LIFE CHANGES TO MINIMIZE DIRECTIONS
-# &amp; AND SIMILAR CHARACTERS
