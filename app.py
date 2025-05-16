@@ -128,7 +128,7 @@ def get_directions_steps(origin_name: str, destination_name: str, mode: str) -> 
             transit_msg = f"{idx}. Take {vehicle} {short_name} from {departure} to {arrival}"
             instructions.append(transit_msg)
             continue
-        
+
         text = re.sub(r"<.*?>", "", step.get("html_instructions", ""))
         text = re.sub(r"([a-z])([A-Z])", r"\1. \2", text)
         dist = step["distance"]["text"]
@@ -202,7 +202,7 @@ def handle_sms():
         message = "SMS Directions:\nUnrecognized command. Type 'HELP' for instructions."
 
     chunks = split_sms(message)
-    xml_messages = "".join(f"<Message>{escape(chunk)}</Message>" for chunk in chunks)
+    xml_messages = "".join(f"<Message>{chunk}</Message>" for chunk in chunks)
     xml_response = f"<Response>{xml_messages}</Response>"
 
     return Response(xml_response, mimetype="application/xml")
