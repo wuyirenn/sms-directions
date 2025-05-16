@@ -118,6 +118,17 @@ def get_directions_steps(origin_name: str, destination_name: str, mode: str) -> 
     steps = data["routes"][0]["legs"][0]["steps"]
     instructions = []
     for idx, step in enumerate(steps, start=1):
+        transit = step.get("transit_details")
+        if transit:
+            line = transit.get("line", {})
+            vehicle = line.get("vehicle", {}).get("type", "Transit")
+            short_name = line.get("short_name") or line.get("name") or "Unknown line"
+            departure = transit.get("departure_stop", {}).get("name", "")
+            arrival = transit.get("arrival_stop", {}).get("name", "")
+            transit_msg = f"{idx}. Take {vehicle} {short_name} from {departure} to {arrival}"
+            instructions.append(transit_msg)
+            continue
+        
         text = re.sub(r"<.*?>", "", step.get("html_instructions", ""))
         text = re.sub(r"([a-z])([A-Z])", r"\1. \2", text)
         dist = step["distance"]["text"]
