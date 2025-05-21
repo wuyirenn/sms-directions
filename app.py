@@ -170,13 +170,7 @@ def handle_sms():
     command, mode = get_command_type(user_input)
 
     if command == "HELP":
-        message = (
-            "Commands:\n"
-            "1. 'WALK from [A] to [B]'\n"
-            "2. 'TRANSIT from [A] to [B]'\n"
-            "3. 'DRIVE from [A] to [B]'\n"
-            "4. For more info, visit sms-directions-production.up.railway.app."
-        )
+        return
     elif command in {"WALK", "TRANSIT", "DRIVE"}:
         try:
             route = extract_route(user_input)
