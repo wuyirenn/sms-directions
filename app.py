@@ -200,7 +200,7 @@ def handle_sms():
             route = extract_route(user_input)
             if not is_location_geocodable(route['origin']) or not is_location_geocodable(route['destination']):
                 return respond_with_sms(
-                    "Sorry — we can’t use vague locations like “my location” or “near me” because this service does not use GPS or real-time tracking. Please use specific addresses or location names."
+                    "Sorry! This service does not use GPS or real-time tracking, and can’t process places like “my location” or “near me”. Please use a specific address or location name."
                 )
             
             duration, steps = get_directions_steps(route["origin"], route["destination"], mode)
