@@ -85,6 +85,24 @@ def resolve_place(query: str, lat=None, lng=None) -> dict:
         "lng": place["location"]["longitude"]
     }
 
+def is_location_geocodable(location: str) -> bool:
+    """Asks the LLM whether this location is specific enough for geocoding."""
+    prompt = f"""
+    A user typed the location: "{location}". Decide if this location can be reliably geocoded *without* knowing the user's real-time position.
+    Respond only with "yes" or "no".
+    """
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-nano",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+        content = response.choices[0].message.content.strip().lower()
+        return content.startswith("y")
+    except Exception:
+        return False
+
 
 # ------------ GET DIRECTIONS ------------
 def get_directions_steps(origin_name: str, destination_name: str, mode: str) -> tuple[str, str]:
@@ -133,7 +151,7 @@ def get_directions_steps(origin_name: str, destination_name: str, mode: str) -> 
     return duration, "\n".join(instructions)
 
 
-# ------------ CHUNK SMS ------------
+# ------------ SMS HELPERS ------------
 def split_sms(text: str, max_len: int = 1600) -> list[str]:
     """Splits text into chunks that fit in individual SMS messages."""
     parts = []
@@ -145,6 +163,12 @@ def split_sms(text: str, max_len: int = 1600) -> list[str]:
         text = text[split_at:].strip()
     parts.append(text)
     return parts
+
+def respond_with_sms(text: str) -> Response:
+    """Formats one or more SMS messages into TwiML Response."""
+    chunks = split_sms(text)
+    xml_messages = "".join(f"<Message>{chunk}</Message>" for chunk in chunks)
+    return Response(f"<Response>{xml_messages}</Response>", mimetype="application/xml")
 
 
 # ------------ API ROUTES ------------
@@ -174,6 +198,11 @@ def handle_sms():
     elif command in {"WALK", "TRANSIT", "DRIVE"}:
         try:
             route = extract_route(user_input)
+            if not is_location_geocodable(route['origin']) or not is_location_geocodable(route['destination']):
+                return respond_with_sms(
+                    "Sorry — we can’t use vague locations like “my location” or “near me” because this service does not use GPS or real-time tracking. Please use specific addresses or location names."
+                )
+            
             duration, steps = get_directions_steps(route["origin"], route["destination"], mode)
             message = (
                 f"From: {route['origin']}\n"
@@ -187,11 +216,7 @@ def handle_sms():
     else:
         message = "Unrecognized command. Type 'HELP' for instructions."
 
-    chunks = split_sms(message)
-    xml_messages = "".join(f"<Message>{chunk}</Message>" for chunk in chunks)
-    xml_response = f"<Response>{xml_messages}</Response>"
-
-    return Response(xml_response, mimetype="application/xml")
+    return respond_with_sms(message)
 
 
 # ------------ RUN APP ------------
