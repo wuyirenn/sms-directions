@@ -179,7 +179,8 @@ def condense_directions(raw_steps: str) -> str:
     1. Keep info about exact distances. 
     2. Start each line with an action verb (e.g. Walk, Turn, Take).
     3. Keep it as short as possible. (i.e multiple steps about taking slight turns, staying on a street, etc should be condensed as one: stay on X St. for Y distance)
-    4. Reiterating: keep it as short as possible while adhering to 1, 2, and 3.
+    4. Remove any lines that ask for slight turns or are <400ft.
+    5. Reiterating: keep it as short as possible while adhering to 1, 2, and 3.
 
     Steps:
     {raw_steps}
