@@ -170,6 +170,30 @@ def respond_with_sms(text: str) -> Response:
     xml_messages = "".join(f"<Message>{chunk}</Message>" for chunk in chunks)
     return Response(f"<Response>{xml_messages}</Response>", mimetype="application/xml")
 
+def condense_directions(raw_steps: str) -> str:
+    """Uses GPT to summarize navigation steps into 2-3 condensed SMS-friendly lines."""
+    prompt = f"""
+    You are an SMS-based navigation assistant. A user has requested directions. 
+    The steps below are too long, confusing, and expensive to send via SMS. 
+    Please summarize them into clear, short lines that are still accurate, safe, and easy to follow.
+    Maintain exact distances. Start each line with an action verb (e.g. Walk, Turn, Take).
+    Keep it short enough to fit into a single SMS if possible.
+
+    Steps:
+    {raw_steps}
+    """
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-nano",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return "Could not condense steps. Please try again."
+
+
 
 # ------------ API ROUTES ------------
 @app.route("/", methods=["GET"])
@@ -204,13 +228,13 @@ def handle_sms():
                 )
             
             duration, steps = get_directions_steps(route["origin"], route["destination"], mode)
+            condensed = condense_directions(steps)
             message = (
-                f"From: {route['origin']}\n"
-                f"To: {route['destination']}\n"
-                f"Mode: {command}\n"
-                f"Duration: {duration}\n\n"
-                f"{steps}"
+                f"{command} from {route['origin']} to {route['destination']} ({duration})\n\n"
+                f"{condensed}"
             )
+            return respond_with_sms(message)
+
         except (ValueError, KeyError) as e:
             message = f"Error: {str(e)}"
     else:
