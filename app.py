@@ -175,9 +175,12 @@ def condense_directions(raw_steps: str) -> str:
     prompt = f"""
     You are an SMS-based navigation assistant. A user has requested directions. 
     The steps below are too long, confusing, and expensive to send via SMS. 
-    Please summarize them into clear, short lines that are still accurate, safe, and easy to follow.
-    Maintain exact distances. Start each line with an action verb (e.g. Walk, Turn, Take).
-    Keep it short enough to fit into a single SMS if possible.
+    Please condense them into a few clear, short lines that are still accurate, safe, and easy to follow.
+    1. Maintain exact distances. 
+    2. Remove lines that indicate slight, meaningless turns (< 400ft). 
+    3. Start each line with an action verb (e.g. Walk, Turn, Take).
+    4. Rule of thumb: one line per street (if there are no navigational changes)
+    5. Keep it as short as possible.
 
     Steps:
     {raw_steps}
