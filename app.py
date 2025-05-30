@@ -173,16 +173,33 @@ def respond_with_sms(text: str) -> Response:
 def condense_directions(raw_steps: str) -> str:
     """Uses GPT to summarize navigation steps into 2-3 condensed SMS-friendly lines."""
     prompt = f"""
-    You are an SMS-based navigation assistant. A user has requested directions. 
-    The steps below are too long, confusing, and expensive to send via SMS. 
-    Please condense them into a few clear, short lines that are still accurate, safe, and easy to follow.
-    1. Keep info about exact distances. 
-    2. Start each line with an action verb (e.g. Walk, Turn, Take).
-    3. Keep it as short as possible. (i.e multiple steps about taking slight turns, staying on a street, etc should be condensed as one: stay on X St. for Y distance)
-    4. Remove any lines that ask for slight turns or are <400ft.
-    5. Reiterating: keep it as short as possible while adhering to 1, 2, and 3.
+    You are an SMS-based navigation assistant. A user has requested directions, but the steps below are too long and expensive to send via SMS.
 
-    Steps:
+    Your task is to simplify the directions while preserving all essential actions. Follow these rules:
+
+    1. Eliminate redundant or unclear steps (e.g., "slight left", "turn toward" if the next clear turn is specified).
+    2. Remove filler or overly verbose language.
+    3. Only include steps that represent a clear change in direction or road.
+
+    Example:
+
+    Original:
+    1. Head west on Main St. (0.4 mi)  
+    2. Turn toward Market St. (200 ft)  
+    3. Turn right onto Market St. (0.4 mi)  
+    4. Slight left (175 ft)  
+    5. Slight right (84 ft)  
+    6. Turn right onto 1st Ave (0.2 mi)
+    7. Destination will be on your right
+
+    Simplified:
+    1. Head west on Main St. (0.4 mi)  
+    2. Turn right onto Market St. (0.4 mi)  
+    3. Turn right onto 1st Ave (0.2 mi)
+    4. Destination will be on your right
+
+    Now simplify the following directions:
+
     {raw_steps}
     """
 
